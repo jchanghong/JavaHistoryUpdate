@@ -1,4 +1,123 @@
 
+### 快速开始
+### java8升级到java13以后简单方法
+
+1. javac 参数加上 --enable-preview --release 13
+2. java 参数加上 --enable-preview
+3. 更新所有依赖包到最新
+
+以上3步基本可以了。
+如果还不行，请参考最新的迁移指南
+
+
+### spring boot java13 pom文件完整
+```
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>2.2.0.RELEASE</version>
+        <relativePath/> <!-- lookup parent from repository -->
+    </parent>
+    <groupId>java1019</groupId>
+    <artifactId>java1019</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <name>java1019</name>
+    <!-- FIXME change it to the project's website -->
+    <url>http://www.example.com</url>
+
+    <properties>
+        <java.version>13</java.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.1</version>
+                <configuration>
+                    <release>13</release>
+                    <compilerArgs>
+                        --enable-preview
+                    </compilerArgs>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+</project>
+
+```
+
+* * *
+### java完整代码
+```java
+@SpringBootApplication
+@RestController
+public class App implements CommandLineRunner {
+    @GetMapping("test")
+    public String web(String param) {
+        int sum = Stream
+                .generate(String::new)
+                .map(a -> a + "test")
+                .limit(100)
+                .mapToInt(String::length)
+                .sum();
+        return """
+                    ||||
+            ||| =hello world= |||
+""" + sum;
+    }
+
+    public static void main(String[] args) {
+        System.out.println("""
+                   ||||
+            ||| =hello world= |||
+      """);
+        SpringApplication.run(App.class, args);
+    }
+
+    @Override
+    public void run(String... args) throws Exception {
+        Executors.newScheduledThreadPool(1)
+                .scheduleAtFixedRate(() -> {
+                    try {
+                        var request = HttpRequest.newBuilder()
+                                .uri(URI.create("http://localhost:8080/test"))
+                                .GET().build();
+                        var client = HttpClient.newHttpClient();
+                        HttpResponse<String> response = client
+                                .send(request,
+                                        HttpResponse.BodyHandlers.ofString());
+                        System.out.println(response.body());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        System.exit(-1);
+                    }
+
+                }, 1, 3, TimeUnit.SECONDS);
+    }
+}
+```
+
 * * *
 # 所有版本历史完整更新说明
 #### oracle官方文档翻译删去无用信息
